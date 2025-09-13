@@ -52,15 +52,15 @@ class Point:
         return self + (-other)
     
     def __mul__(self, other):
-        if not isinstance(other, int):
-            raise ValueError('The factor must be an integer')
+        if not isinstance(other, int) and other > 0:
+            raise ValueError('The factor must be an integer greater than zero')
         result = Point(None, None, self.a, self.b)
-        if other > 0:
-            for _ in range(0, other):
-                result = result + self
-        if other < 0:
-            for _ in range(0, other):
-                result = result - self
+        p = Point(self.x, self.y, self.a, self.b)
+        while other > 0:
+            if other & 1:
+                result += p
+            p += p
+            other >>= 1
         return result
     
     def __rmul__(self, other):
