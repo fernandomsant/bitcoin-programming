@@ -25,7 +25,7 @@ class Point:
             raise ValueError('The points does not correspond the equations')
 
     def __neg__(self):
-        inverse = Point(self.x, -self.y, self.a, self.b)
+        inverse = self.__class__(self.x, -self.y, self.a, self.b)
         return inverse
 
     def __add__(self, other):
@@ -36,32 +36,29 @@ class Point:
         if x2 == None:
             return self
         if x1 == x2 and y1 != y2:
-            return Point(None, None, self.a, self.b)
+            return self.__class__(None, None, self.a, self.b)
         if self == other:
             s = (3 * (x1**2) + self.a) / (2 * y1)
             x3 = s**2 - 2 * x1
             y3 = -(s * (x3 - x1) + y1)
-            return Point(x3, y3, self.a, self.b)
+            return self.__class__(x3, y3, self.a, self.b)
         s = (y2 - y1) / (x2 - x1)
         x3 = s**2 - x1 - x2
         y3 = -(s * (x3 - x1) + y1)
-        return Point(x3, y3, self.a, self.b)
+        return self.__class__(x3, y3, self.a, self.b)
     
     def __sub__(self, other):
         self.check_equation(other)
         return self + (-other)
     
-    def __mul__(self, other):
+    def __rmul__(self, other):
         if not isinstance(other, int) and other > 0:
             raise ValueError('The factor must be an integer greater than zero')
-        result = Point(None, None, self.a, self.b)
-        p = Point(self.x, self.y, self.a, self.b)
+        result = self.__class__(None, None, self.a, self.b)
+        p = self.__class__(self.x, self.y, self.a, self.b)
         while other > 0:
             if other & 1:
                 result += p
             p += p
             other >>= 1
         return result
-    
-    def __rmul__(self, other):
-        return self * other

@@ -30,21 +30,21 @@ class FieldElement:
     def __add__(self, other):
         self.check_fields_order(other)
         num = (self.num + other.num) % self.prime
-        return FieldElement(num, self.prime)
+        return self.__class__(num, self.prime)
     
     def __sub__(self, other):
         self.check_fields_order(other)
         num = (self.num - other.num) % self.prime
-        return FieldElement(num, self.prime)
+        return self.__class__(num, self.prime)
     
     def __mul__(self, other):
         if isinstance(other, FieldElement):
             self.check_fields_order(other)
             num = (self.num * other.num) % self.prime
-            return FieldElement(num, self.prime)
+            return self.__class__(num, self.prime)
         if isinstance(other, int):
             num = (self.num * other) % self.prime
-            return FieldElement(num, self.prime)
+            return self.__class__(num, self.prime)
         raise ValueError('Multiply only by the field elements itself or integers')
     
     def __rmul__(self, other):
@@ -67,4 +67,4 @@ class FieldElement:
         if not isinstance(other, int):
             raise ValueError('Potentiation only defined on integers set')
         num = pow(self.num, other, self.prime)
-        return FieldElement(num, self.prime)
+        return self.__class__(num, self.prime)
