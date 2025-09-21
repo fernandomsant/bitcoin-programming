@@ -26,3 +26,77 @@ def encode_base58_checksum(b):
 def hash160(s):
     '''sha256 followed by ripemd160'''
     return new('ripemd160', sha256(s).digest()).digest()
+
+def int_to_little_endian(n: int, length: int) -> bytes:
+    base = 0xff + 1
+    result = b''
+    q, r = divmod(n, base)
+    while True:
+        result += r.to_bytes()
+        if q == 0:
+            break
+        q, r = divmod(q, base)
+    if length < len(result):
+        raise OverflowError('int too big to convert')
+    result += b'\x00' * (length - len(result))
+    return result
+
+def little_endian_to_int(b: bytes) -> int:
+    result = 0
+    for p, byte in enumerate(b):
+        result += byte * (256**p)
+    return result
+
+def read_varint(s):
+    '''read_varint reads a variable integer from a stream'''
+    i = s.read(1)[0]
+    if i == 0xfd:
+        # 0xfd means the next two bytes are the number
+        return little_endian_to_int(s.read(2))
+    elif i == 0xfe:
+        # 0xfe means the next four bytes are the number
+        return little_endian_to_int(s.read(4))
+    elif i == 0xff:
+        # 0xff means the next eight bytes are the number
+        return little_endian_to_int(s.read(8))
+    else:
+        # anything else is just the integer
+        return i
+    
+def encode_varint(i):
+    '''encodes an integer as a varint'''
+    if i < 0xfd:
+        return bytes([i])
+    elif i < 0x10000:
+        return b'\xfd' + int_to_little_endian(i, 2)
+    elif i < 0x100000000:
+        return b'\xfe' + int_to_little_endian(i, 4)
+    elif i < 0x10000000000000000:
+        return b'\xff' + int_to_little_endian(i, 8)
+    else:
+        raise ValueError(f'integer too large: {i}')
+    
+def op_dup(stack):
+    if len(stack) < 1:
+        return False
+    stack.append(stack[-1])
+    return True
+
+def op_hash160(stack):
+    if len(stack) < 1:
+        return False
+    element = stack.pop()
+    stack.append(hash160(element))
+
+def op_hash256(stack):
+    if len(stack) < 1:
+        return False
+    element = stack.pop()
+    stack.append(hash256(element))
+    return True
+
+OP_CODE_FUNCTIONS = {
+    118: op_dup,
+    169: op_hash160,
+    170: op_hash256,
+}
