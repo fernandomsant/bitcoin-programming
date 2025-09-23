@@ -19,3 +19,13 @@ class Signature:
             sbin = b'\x00' + sbin
         result += bytes([2, len(sbin)]) + sbin
         return bytes([0x30, len(result)]) + result
+    
+    @classmethod
+    def parse(cls, stream):
+        stream.read(3)
+        rlen = int.from_bytes(stream.read(1))
+        r = int.from_bytes(stream.read(rlen), 'big')
+        stream.read(1)
+        slen = int.from_bytes(stream.read(1))
+        s = int.from_bytes(stream.read(slen))
+        return Signature(r, s)

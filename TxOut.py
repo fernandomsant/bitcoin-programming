@@ -1,4 +1,5 @@
 from helper import int_to_little_endian
+from Script import Script
 
 class TxOut:
 
@@ -13,10 +14,7 @@ class TxOut:
     def parse(cls, stream):
         s_amount = stream.read(8)
         amount = int.from_bytes(s_amount)
-        s_script_pubkey_len = stream.read(1)
-        script_pubkey_len = int.from_bytes(s_script_pubkey_len)
-        s_script_pubkey = stream.read(script_pubkey_len)
-        script_pubkey = int.from_bytes(s_script_pubkey)
+        script_pubkey = Script.parse(stream)
         return TxOut(amount, script_pubkey)
     
     def serialize(self):
